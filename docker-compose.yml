@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  skyalert:
+    build: .
+    container_name: skyalert
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Persist the SQLite price history DB between container restarts
+      - skyalert_data:/app/data
+    command: ["python", "scheduler.py", "--time", "09:00"]
+
+  dashboard:
+    build: .
+    container_name: skyalert-dashboard
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5050:5050"
+    volumes:
+      # Shares the same SQLite volume as the scheduler so it reads live data
+      - skyalert_data:/app/data
+    command: ["python", "dashboard.py", "--host", "0.0.0.0", "--port", "5050"]
+    depends_on:
+      - skyalert
+
+volumes:
+  skyalert_data:

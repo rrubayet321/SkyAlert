@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flight Deal Alert</title>
+  <style>
+    body {
+      margin: 0; padding: 0;
+      background-color: #f0f4f8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .wrapper {
+      max-width: 560px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .header {
+      background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      padding: 32px 40px;
+      text-align: center;
+      color: #ffffff;
+    }
+    .header .plane { font-size: 48px; display: block; margin-bottom: 8px; }
+    .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+    .header p  { margin: 6px 0 0; font-size: 14px; opacity: 0.85; }
+    .price-badge {
+      text-align: center;
+      padding: 28px 40px 8px;
+    }
+    .price-badge .amount {
+      font-size: 56px;
+      font-weight: 800;
+      color: #1a73e8;
+      line-height: 1;
+    }
+    .price-badge .label {
+      font-size: 13px;
+      color: #5f6368;
+      margin-top: 4px;
+    }
+    .route {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px 40px;
+    }
+    .city-block { text-align: center; flex: 1; }
+    .city-block .iata {
+      font-size: 28px;
+      font-weight: 700;
+      color: #202124;
+    }
+    .city-block .city-name {
+      font-size: 12px;
+      color: #5f6368;
+      margin-top: 2px;
+    }
+    .arrow {
+      font-size: 22px;
+      color: #1a73e8;
+      flex-shrink: 0;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid #e8eaed;
+      margin: 4px 40px;
+    }
+    .dates {
+      padding: 16px 40px 28px;
+      display: flex;
+      gap: 24px;
+    }
+    .date-item { flex: 1; }
+    .date-item .date-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #5f6368;
+      margin-bottom: 4px;
+    }
+    .date-item .date-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: #202124;
+    }
+    .footer {
+      background: #f8f9fa;
+      padding: 18px 40px;
+      text-align: center;
+      font-size: 11px;
+      color: #9aa0a6;
+      border-top: 1px solid #e8eaed;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <span class="plane">✈️</span>
+      <h1>Low Price Flight Alert</h1>
+      <p>A fare you've been watching just dropped below your target.</p>
+    </div>
+
+    <div class="price-badge">
+      <div class="amount">${{ price }}</div>
+      <div class="label">round-trip per person (USD)</div>
+    </div>
+
+    <div class="route">
+      <div class="city-block">
+        <div class="iata">{{ origin_airport }}</div>
+        <div class="city-name">{{ origin_city }}</div>
+      </div>
+      <div class="arrow">⇄</div>
+      <div class="city-block">
+        <div class="iata">{{ destination_airport }}</div>
+        <div class="city-name">{{ destination_city }}</div>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="dates">
+      <div class="date-item">
+        <div class="date-label">Outbound</div>
+        <div class="date-value">{{ out_date }}</div>
+      </div>
+      <div class="date-item">
+        <div class="date-label">Return</div>
+        <div class="date-value">{{ return_date }}</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Sent by SkyAlert &nbsp;·&nbsp; Prices may change &nbsp;·&nbsp; Book quickly!
+    </div>
+  </div>
+</body>
+</html>

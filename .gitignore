@@ -1,0 +1,40 @@
+# Secrets — never commit this
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# macOS
+.DS_Store
+
+# Test output
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# SQLite price history (local data, not for version control)
+*.db
+
+# Docker
+docker-compose.override.yml

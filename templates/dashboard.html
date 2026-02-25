@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyAlert — Price History Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f0f4f8;
+      color: #202124;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      color: #fff;
+      padding: 28px 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    }
+    header .logo { font-size: 36px; }
+    header h1   { font-size: 22px; font-weight: 700; letter-spacing: 0.3px; }
+    header p    { font-size: 13px; opacity: 0.8; margin-top: 3px; }
+
+    /* ── Main layout ─────────────────────────────────────────────────────── */
+    main {
+      max-width: 1200px;
+      margin: 36px auto;
+      padding: 0 24px 60px;
+    }
+
+    section + section { margin-top: 40px; }
+
+    h2 {
+      font-size: 15px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #5f6368;
+      margin-bottom: 16px;
+    }
+
+    /* ── Stat cards ──────────────────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+    .stat-card .value {
+      font-size: 38px;
+      font-weight: 800;
+      color: #1a73e8;
+      line-height: 1;
+    }
+    .stat-card .label {
+      font-size: 12px;
+      color: #5f6368;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Chart cards ─────────────────────────────────────────────────────── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+      gap: 20px;
+    }
+
+    .chart-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .chart-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .chart-card .sub {
+      font-size: 12px;
+      color: #5f6368;
+      margin-bottom: 16px;
+    }
+    .chart-wrap {
+      position: relative;
+      height: 220px;
+    }
+
+    /* ── Deals table ─────────────────────────────────────────────────────── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 13px;
+    }
+    thead { background: #1a73e8; color: #fff; }
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    tbody tr { border-bottom: 1px solid #e8eaed; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8f9ff; }
+    tbody td { padding: 11px 16px; }
+
+    .badge-deal {
+      display: inline-block;
+      background: #e6f4ea;
+      color: #1e8e3e;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-normal {
+      display: inline-block;
+      background: #f1f3f4;
+      color: #5f6368;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 11px;
+    }
+
+    /* ── Empty / loading states ──────────────────────────────────────────── */
+    .empty {
+      text-align: center;
+      padding: 60px 24px;
+      color: #5f6368;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .empty .icon  { font-size: 48px; margin-bottom: 12px; }
+    .empty p      { font-size: 15px; }
+    .empty code   { background: #f1f3f4; border-radius: 4px; padding: 2px 6px; font-size: 13px; }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 11px;
+      color: #9aa0a6;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="logo">✈️</span>
+    <div>
+      <h1>SkyAlert Dashboard</h1>
+      <p>Price history &amp; deal tracker — data refreshes on page load</p>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Stats row -->
+    <section id="stats-section">
+      <h2>Overview</h2>
+      <div class="stats-grid" id="stats-grid">
+        <!-- populated by JS -->
+      </div>
+    </section>
+
+    <!-- Price trend charts -->
+    <section id="charts-section">
+      <h2>Price Trends by Destination</h2>
+      <div class="charts-grid" id="charts-grid">
+        <!-- populated by JS -->
+      </div>
+    </section>
+
+    <!-- Recent deals -->
+    <section id="deals-section">
+      <h2>Recent Searches</h2>
+      <div class="table-wrap">
+        <table id="deals-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Destination</th>
+              <th>Price (USD)</th>
+              <th>Outbound</th>
+              <th>Return</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="deals-body">
+            <!-- populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>SkyAlert &nbsp;·&nbsp; Read-only dashboard &nbsp;·&nbsp; Prices may change — book quickly!</footer>
+
+  <script>
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    function fmt(value, fallback = "—") {
+      return value !== null && value !== undefined ? value : fallback;
+    }
+
+    function fmtPrice(price) {
+      if (price === null || price === undefined) return "No flights";
+      return "$" + Number(price).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    // ── Stats cards ───────────────────────────────────────────────────────────
+
+    async function loadStats() {
+      const grid = document.getElementById("stats-grid");
+      try {
+        const res  = await fetch("/api/stats");
+        const data = await res.json();
+
+        const items = [
+          { label: "Total Searches",       value: data.total_searches ?? 0 },
+          { label: "Deals Found",          value: data.deals_found ?? 0 },
+          { label: "Destinations Tracked", value: data.destinations_tracked ?? 0 },
+          {
+            label: "Cheapest Ever",
+            value: data.cheapest_ever !== null ? "$" + Number(data.cheapest_ever).toFixed(0) : "—",
+          },
+        ];
+
+        grid.innerHTML = items.map(({ label, value }) => `
+          <div class="stat-card">
+            <div class="value">${value}</div>
+            <div class="label">${label}</div>
+          </div>
+        `).join("");
+
+      } catch (err) {
+        grid.innerHTML = `<p style="color:#d93025">Failed to load stats: ${err.message}</p>`;
+      }
+    }
+
+    // ── Price trend charts ────────────────────────────────────────────────────
+
+    const BLUE       = "rgba(26,115,232,1)";
+    const BLUE_FILL  = "rgba(26,115,232,0.08)";
+    const DEAL_COLOR = "rgba(30,142,62,1)";
+
+    function buildChart(canvasId, destination, rows) {
+      const labels = rows.map(r => r.date);
+      const prices = rows.map(r => r.price);
+      const pointColors = rows.map(r => r.is_deal ? DEAL_COLOR : BLUE);
+      const pointRadius = rows.map(r => r.is_deal ? 6 : 3);
+
+      const ctx = document.getElementById(canvasId).getContext("2d");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: "Price (USD)",
+            data: prices,
+            borderColor: BLUE,
+            backgroundColor: BLUE_FILL,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: pointColors,
+            pointRadius,
+            pointHoverRadius: 7,
+            spanGaps: true,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const row = rows[ctx.dataIndex];
+                  const price = row.price !== null ? `$${row.price}` : "No flights";
+                  const deal  = row.is_deal ? " 🎯 DEAL" : "";
+                  return `${price}${deal}`;
+                },
+                afterLabel: ctx => {
+                  const row = rows[ctx.dataIndex];
+                  if (!row.out_date) return "";
+                  return `Out: ${row.out_date}  Return: ${row.return_date ?? "—"}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              ticks: {
+                maxTicksLimit: 8,
+                color: "#5f6368",
+                font: { size: 11 },
+              },
+              grid: { color: "#f1f3f4" },
+            },
+            y: {
+              ticks: {
+                color: "#5f6368",
+                font: { size: 11 },
+                callback: v => v !== null ? `$${v}` : "",
+              },
+              grid: { color: "#f1f3f4" },
+              beginAtZero: false,
+            },
+          },
+        },
+      });
+    }
+
+    async function loadCharts() {
+      const grid = document.getElementById("charts-grid");
+      try {
+        const res     = await fetch("/api/history");
+        const history = await res.json();
+        const cities  = Object.keys(history);
+
+        if (cities.length === 0) {
+          grid.innerHTML = `
+            <div class="empty">
+              <div class="icon">📭</div>
+              <p>No price history yet.<br>Run <code>python main.py</code> to start collecting data.</p>
+            </div>`;
+          return;
+        }
+
+        grid.innerHTML = cities.map((city, i) => {
+          const rows       = history[city];
+          const validPrices = rows.filter(r => r.price !== null).map(r => r.price);
+          const minPrice   = validPrices.length ? Math.min(...validPrices) : null;
+          const dealsCount = rows.filter(r => r.is_deal).length;
+          const canvasId   = `chart-${i}`;
+
+          return `
+            <div class="chart-card">
+              <h3>${city}</h3>
+              <div class="sub">
+                ${rows.length} search${rows.length !== 1 ? "es" : ""}
+                &nbsp;·&nbsp;
+                ${dealsCount} deal${dealsCount !== 1 ? "s" : ""} found
+                ${minPrice !== null ? `&nbsp;·&nbsp; Lowest: $${minPrice}` : ""}
+              </div>
+              <div class="chart-wrap">
+                <canvas id="${canvasId}"></canvas>
+              </div>
+            </div>`;
+        }).join("");
+
+        // Build each chart after DOM is updated
+        cities.forEach((city, i) => buildChart(`chart-${i}`, city, history[city]));
+
+        // Populate the recent-searches table
+        populateTable(history);
+
+      } catch (err) {
+        grid.innerHTML = `<p style="color:#d93025">Failed to load history: ${err.message}</p>`;
+      }
+    }
+
+    // ── Recent searches table ─────────────────────────────────────────────────
+
+    function populateTable(history) {
+      // Flatten all rows and sort newest first
+      const allRows = [];
+      for (const [city, rows] of Object.entries(history)) {
+        rows.forEach(r => allRows.push({ city, ...r }));
+      }
+      allRows.sort((a, b) => b.date.localeCompare(a.date));
+
+      const tbody = document.getElementById("deals-body");
+      if (allRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#5f6368;padding:24px">No data yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = allRows.slice(0, 50).map(r => `
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.city}</td>
+          <td>${fmtPrice(r.price)}</td>
+          <td>${fmt(r.out_date)}</td>
+          <td>${fmt(r.return_date)}</td>
+          <td>${r.is_deal
+            ? '<span class="badge-deal">Deal ✓</span>'
+            : '<span class="badge-normal">Watched</span>'}</td>
+        </tr>
+      `).join("");
+    }
+
+    // ── Boot ──────────────────────────────────────────────────────────────────
+
+    loadStats();
+    loadCharts();
+  </script>
+
+</body>
+</html>
