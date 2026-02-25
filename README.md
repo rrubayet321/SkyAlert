@@ -288,6 +288,12 @@ ruff check .
 
 ---
 
+## Author
+
+**Rubayet Hassan** — [github.com/rrubayet321](https://github.com/rrubayet321)
+
+---
+
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE) for details.
