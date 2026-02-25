@@ -9,7 +9,6 @@ import requests
 
 from data_manager import DataManager
 
-
 PRICES_URL = "https://api.sheety.co/test/sheet/prices"
 USERS_URL = "https://api.sheety.co/test/sheet/users"
 

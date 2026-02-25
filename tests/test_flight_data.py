@@ -1,6 +1,5 @@
 """Unit tests for flight_data.py — no network calls, no external dependencies."""
 
-import pytest
 
 from flight_data import FlightData, find_cheapest_flight
 

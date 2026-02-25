@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import smtplib
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from flight_data import FlightData
 from notification_manager import NotificationManager
-
 
 SAMPLE_FLIGHT = FlightData(
     price=450.0,
@@ -82,7 +81,7 @@ class TestSendEmails:
 
         assert len(sent_messages) == 2
         # Each message's To header must contain only its own recipient
-        for to_addr, raw_msg in sent_messages:
+        for _to_addr, raw_msg in sent_messages:
             assert raw_msg.count("alice@example.com") + raw_msg.count("bob@example.com") >= 1
             # Crucially: the previous address must not appear in messages after the first
         _, msg_for_bob = sent_messages[1]
